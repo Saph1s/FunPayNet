@@ -1,5 +1,8 @@
 ﻿namespace FunPayNet.Api.Utils;
 
+/// <summary>
+/// Helper methods
+/// </summary>
 public static class Helpers
 {
     private static readonly Random random = new Random();
@@ -26,10 +29,9 @@ public static class Helpers
     /// <returns>Approximate waiting time until the next raising of lots (in seconds).</returns>
     public static int GetWaitTimeFromRaiseResponse(string response)
     {
-        if (response.Contains("секунду."))
-        {
-            return 1;
-        }
+        if (response.Contains("секунду.")) return 1;
+        if (response.Contains("минуту.")) return 60;
+        if (response.Contains("час")) return 3600;
 
         if (response.Contains("сек"))
         {
@@ -37,20 +39,10 @@ public static class Helpers
             return int.Parse(parts[1]);
         }
 
-        if (response.Contains("минуту."))
-        {
-            return 60;
-        }
-
         if (response.Contains("мин"))
         {
             var parts = response.Split();
             return (int.Parse(parts[1]) - 1) * 60;
-        }
-
-        if (response.Contains("час"))
-        {
-            return 3600;
         }
 
         return 10;

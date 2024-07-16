@@ -5,10 +5,29 @@
 /// </summary>
 public class Lot
 {
+    /// <summary>
+    /// Lot ID
+    /// </summary>
     public required int Id { get; set; }
+
+    /// <summary>
+    /// Lot title
+    /// </summary>
     public required string Title { get; set; }
+
+    /// <summary>
+    /// Lot price
+    /// </summary>
     public required string Price { get; set; }
+
+    /// <summary>
+    /// Lot category ID
+    /// </summary>
     public int CategoryId { get; set; }
+
+    /// <summary>
+    /// Lot category title
+    /// </summary>
     public string? Server { get; set; }
     //public int? GameId { get; set; }
 }

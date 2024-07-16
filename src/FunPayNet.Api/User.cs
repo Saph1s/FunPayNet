@@ -5,6 +5,9 @@ using HtmlAgilityPack;
 
 namespace FunPayNet.Api;
 
+/// <summary>
+/// User model
+/// </summary>
 public class User
 {
     /// <summary>
@@ -15,9 +18,9 @@ public class User
     /// <param name="timeout">Request timeout</param>
     /// <returns>UserLots object</returns>
     /// <exception cref="Exception"></exception>
-    public async Task<UserLots> GetUserLots(int userId, bool includeCurrency = false, double timeout = 10.0)
+    public static async Task<UserLots> GetUserLots(int userId, bool includeCurrency = false, double timeout = 10.0)
     {
-        var httpClient = new HttpClient()
+        var httpClient = new HttpClient
         {
             Timeout = TimeSpan.FromSeconds(timeout)
         };
@@ -42,7 +45,7 @@ public class User
         var offerNodes = htmlDocument.DocumentNode.SelectNodes("//div[@class='offer']");
         if (offerNodes == null)
         {
-            return new UserLots()
+            return new UserLots
             {
                 Categories = categories,
                 Lots = lots
@@ -62,7 +65,7 @@ public class User
             var editLotsUrl = categoryLink + "trade";
             var categoryTitle = categoryLinkNode.InnerText;
             var categoryId = int.Parse(categoryLink.TrimEnd('/').Split('/').Last());
-            var categoryObject = new Category()
+            var categoryObject = new Category
             {
                 Id = categoryId,
                 GameId = null,
@@ -80,7 +83,7 @@ public class User
                 var title = lotNode.SelectSingleNode("//div[@class='tc-desc-text']").InnerText;
                 var price = lotNode.SelectSingleNode("//div[@class='tc-price']").InnerText;
                 var server = lotNode.SelectSingleNode(".//div[@class='tc-server']")?.InnerText;
-                var lotObject = new Lot()
+                var lotObject = new Lot
                 {
                     Id = lotId,
                     Title = title,
@@ -92,7 +95,7 @@ public class User
             }
         }
 
-        return new UserLots()
+        return new UserLots
         {
             Categories = categories,
             Lots = lots

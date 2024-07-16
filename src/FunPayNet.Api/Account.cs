@@ -8,25 +8,75 @@ using Newtonsoft.Json.Linq;
 
 namespace FunPayNet.Api;
 
+/// <summary>
+/// Account model
+/// </summary>
 public class Account
 {
+    /// <summary>
+    /// Account id
+    /// </summary>
     public required int Id { get; set; }
+
+    /// <summary>
+    /// Username
+    /// </summary>
     public required string Username { get; set; }
+
+    /// <summary>
+    /// Current balance
+    /// </summary>
     public float Balance { get; set; }
+
+    /// <summary>
+    /// Account currency
+    /// </summary>
     public string? Currency { get; set; }
+
+    /// <summary>
+    /// Number of active orders
+    /// </summary>
     public int ActiveOrders { get; set; }
+
+    /// <summary>
+    /// golden_key
+    /// </summary>
     public required string Key { get; set; }
+
+    /// <summary>
+    /// CSRF token
+    /// </summary>
     public string? CsrfToken { get; set; }
+
+    /// <summary>
+    /// PHPSESSID
+    /// </summary>
     private string? SessionId { get; set; }
+
+    /// <summary>
+    /// Saved chats
+    /// </summary>
+
     public string? SavedChats { get; set; }
+
+    /// <summary>
+    /// Last updated
+    /// </summary>
     public DateTime LastUpdated { get; set; }
 
+    /// <summary>
+    /// Get Account
+    /// </summary>
+    /// <param name="token">golden_key</param>
+    /// <param name="timeout">Response timeout</param>
+    /// <returns>Account instance</returns>
+    /// <exception cref="Exception"></exception>
     public async Task<Account> GetAccount(string token, double timeout = 10.0)
     {
-        var httpHandler = new HttpClientHandler()
+        var httpHandler = new HttpClientHandler
         {
             CookieContainer = new CookieContainer(),
-            UseCookies = true,
+            UseCookies = true
         };
         var httpClient = new HttpClient(httpHandler);
         httpClient.Timeout = TimeSpan.FromSeconds(timeout);
@@ -56,15 +106,15 @@ public class Account
 
         var decodedAppData = HttpUtility.HtmlDecode(appDataJson);
         var appData = JObject.Parse(decodedAppData);
-        var userId = appData["userId"].Value<int>();
-        var csrfToken = appData["csrf-token"].Value<string>();
+        var userId = (appData["userId"] ?? throw new Exception("Failed to parse User ID")).Value<int>();
+        var csrfToken = (appData["csrf-token"] ?? throw new Exception("Failed to parse CSRF token")).Value<string>();
 
         var activeSalesNode = htmlDocument.DocumentNode.SelectSingleNode("//span[@class='badge badge-trade']");
         var activeSales = activeSalesNode != null ? int.Parse(activeSalesNode.InnerText) : 0;
 
         var balanceNode = htmlDocument.DocumentNode.SelectSingleNode("//span[@class='badge badge-balance']");
         float balance = 0;
-        string currency = null;
+        string? currency = null;
         if (balanceNode != null)
         {
             var balanceParts = balanceNode.InnerText.Split(' ');
@@ -89,10 +139,20 @@ public class Account
         };
     }
 
+    /// <summary>
+    /// Get account orders
+    /// </summary>
+    /// <param name="excludeOrders">List of orders to exclude</param>
+    /// <param name="includeOutstanding">Include outstanding orders in the list</param>
+    /// <param name="includeCompleted">Include completed orders in the list</param>
+    /// <param name="includeRefunded">Include refunded orders in the list</param>
+    /// <param name="timeout">Response timeout</param>
+    /// <returns>List of orders</returns>
+    /// <exception cref="Exception"></exception>
     public async Task<List<Order>> GetOrders(List<string> excludeOrders, bool includeOutstanding = true,
         bool includeCompleted = false, bool includeRefunded = false, double timeout = 10.0)
     {
-        var httpClient = new HttpClient()
+        var httpClient = new HttpClient
         {
             Timeout = TimeSpan.FromSeconds(timeout)
         };
@@ -141,14 +201,17 @@ public class Account
                 continue;
             }
 
-            var orderId = htmlDocument.DocumentNode.SelectSingleNode("//div[@class='tc-order']")?.InnerText;
+            var orderId = htmlDocument.DocumentNode.SelectSingleNode("//div[@class='tc-order']")?.InnerText ??
+                          throw new Exception("Failed to get order ID");
             if (excludeOrders.Contains(orderId)) continue;
             var title = orderNode.SelectSingleNode("//div[@class='order-desc']//div")?.InnerText;
-            var price = float.Parse(orderNode.SelectSingleNode("//div[@class='tc-price']")?.InnerText.Split(" ")[0]);
+            var price = float.Parse(orderNode.SelectSingleNode("//div[@class='tc-price']")?.InnerText.Split(" ")[0] ??
+                                    throw new Exception("Failed to get order price"));
 
             var customer = htmlDocument.DocumentNode.SelectSingleNode("//div[@class='media-user-name']//span");
-            var customerName = customer?.InnerText;
-            var customerId = int.Parse(customer?.GetAttributeValue("data-href", null).TrimEnd('/').Split('/').Last());
+            var customerName = customer?.InnerText ?? "Unkown";
+            var customerId = int.Parse(customer?.GetAttributeValue("data-href", null).TrimEnd('/').Split('/').Last() ??
+                                       throw new Exception("Failed to get customer ID"));
 
             var order = new Order
             {
@@ -165,6 +228,13 @@ public class Account
         return orders;
     }
 
+    /// <summary>
+    /// Get lot info
+    /// </summary>
+    /// <param name="lotId">Lot ID</param>
+    /// <param name="gameId">Game ID</param>
+    /// <returns>Dictionary with name and value fields</returns>
+    /// <exception cref="Exception"></exception>
     public async Task<Dictionary<string, string>> GetLotInfo(int lotId, int gameId)
     {
         var httpClient = new HttpClient();
@@ -214,19 +284,27 @@ public class Account
         foreach (var selectField in selectFields)
         {
             var name = selectField.GetAttributeValue("name", null);
-            var value = selectField.SelectSingleNode("//option[@selected]")?.GetAttributeValue("value", null);
+            var value = selectField.SelectSingleNode("//option[@selected]")?.GetAttributeValue("value", null) ??
+                        "UNKNOWN";
             list.Add(name, value);
         }
 
         return list;
     }
 
+    /// <summary>
+    /// Get game id of this category
+    /// </summary>
+    /// <param name="category">Category instance</param>
+    /// <param name="timeout">Response timeout</param>
+    /// <returns>Game ID</returns>
+    /// <exception cref="Exception"></exception>
     public async Task<int> GetCategoryGameId(Category category, double timeout = 10.0)
     {
         var link = category.Type == CategoryType.Currency
             ? $"{Links.BaseUrl}/chips/{category.Id}/trade"
             : $"{Links.BaseUrl}/lots/{category.Id}/trade";
-        var httpClient = new HttpClient()
+        var httpClient = new HttpClient
         {
             Timeout = TimeSpan.FromSeconds(timeout)
         };
@@ -262,6 +340,14 @@ public class Account
         return gameId;
     }
 
+    /// <summary>
+    /// Change lot state
+    /// </summary>
+    /// <param name="lotId">Lot ID</param>
+    /// <param name="gameId">Game ID</param>
+    /// <param name="state">State (on/off)</param>
+    /// <returns>Response to request</returns>
+    /// <exception cref="Exception"></exception>
     public async Task<string> ChangeLotState(int lotId, int gameId, bool state = true)
     {
         var lotInfo = await GetLotInfo(lotId, gameId);
@@ -293,9 +379,18 @@ public class Account
         return result;
     }
 
+    /// <summary>
+    /// Send message to chat
+    /// </summary>
+    /// <param name="chatId">Chat ID</param>
+    /// <param name="message">Your message</param>
+    /// <param name="timeout">Response timeout</param>
+    /// <returns>Response to request</returns>
+    /// <exception cref="Exception"></exception>
+    /// <exception cref="InvalidOperationException"></exception>
     public async Task<dynamic> SendMessage(int chatId, string message, double timeout = 10.0)
     {
-        var httpClient = new HttpClient()
+        var httpClient = new HttpClient
         {
             Timeout = TimeSpan.FromSeconds(timeout)
         };
@@ -332,9 +427,16 @@ public class Account
                throw new InvalidOperationException("Failed to parse response");
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="category"></param>
+    /// <param name="timeout"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
     public async Task<string> RequestLotsRaise(Category category, double timeout = 10.0)
     {
-        var httpClient = new HttpClient()
+        var httpClient = new HttpClient
         {
             Timeout = TimeSpan.FromSeconds(timeout)
         };
@@ -346,7 +448,7 @@ public class Account
         var payload = new
         {
             game_id = category.GameId,
-            node_id = category.Id,
+            node_id = category.Id
         };
         var content = new StringContent(JsonConvert.SerializeObject(payload));
         var response = await httpClient.PostAsync(Links.RaiseUrl, content);

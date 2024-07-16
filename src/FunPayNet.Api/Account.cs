@@ -71,7 +71,7 @@ public class Account
     /// <param name="timeout">Response timeout</param>
     /// <returns>Account instance</returns>
     /// <exception cref="Exception"></exception>
-    public async Task<Account> GetAccount(string token, double timeout = 10.0)
+    public static async Task<Account> GetAccount(string token, double timeout = 10.0)
     {
         var httpHandler = new HttpClientHandler
         {
@@ -80,7 +80,7 @@ public class Account
         };
         var httpClient = new HttpClient(httpHandler);
         httpClient.Timeout = TimeSpan.FromSeconds(timeout);
-        httpClient.DefaultRequestHeaders.Add("Cookie", $"golden_key={Key}");
+        httpClient.DefaultRequestHeaders.Add("Cookie", $"golden_key={token}");
         var response = await httpClient.GetAsync($"{Links.BaseUrl}");
         if (!response.IsSuccessStatusCode)
         {

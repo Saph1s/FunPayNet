@@ -16,6 +16,11 @@ public static class Links
     public static readonly string OrdersUrl = $"{BaseUrl}/orders/trade";
 
     /// <summary>
+    /// Update lot URL
+    /// </summary>
+    public static readonly string SaveLotUrl = $"{BaseUrl}/lots/offerSave";
+
+    /// <summary>
     /// User profile URL
     /// </summary>
     public static readonly string UserUrl = $"{BaseUrl}/users";

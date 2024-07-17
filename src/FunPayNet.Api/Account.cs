@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Globalization;
+using System.Net;
 using System.Web;
 using FunPayNet.Api.Items;
 using FunPayNet.Api.Utils;
@@ -293,6 +294,66 @@ public class Account
     }
 
     /// <summary>
+    /// Get the possible fields of the lot
+    /// </summary>
+    /// <param name="nodeId"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    public async Task<Dictionary<string, string>> GetLotFields(int nodeId)
+    {
+        var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Add("Cookie", $"golden_key={Key}; PHPSESSID={SessionId}");
+        httpClient.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
+        httpClient.DefaultRequestHeaders.Add("Accept", "*/*");
+        httpClient.DefaultRequestHeaders.Add("Content-Type", "application/json");
+
+        var response = await httpClient.GetAsync($"{Links.BaseUrl}/lots/offerEdit?node={nodeId}");
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception("Failed to get lot fields");
+        }
+
+        var htmlContent = await response.Content.ReadAsStringAsync();
+        var htmlDocument = new HtmlDocument();
+        htmlDocument.LoadHtml(htmlContent);
+
+        var lotFormNode = htmlDocument.DocumentNode.SelectSingleNode("//form[@class='form-offer-editor']");
+        var inputFields = lotFormNode.SelectNodes("//input");
+        var textFields = lotFormNode.SelectNodes("//textarea");
+        var selectFields = lotFormNode.SelectNodes("//select");
+        var list = new Dictionary<string, string>();
+        foreach (var inputField in inputFields)
+        {
+            var name = inputField.GetAttributeValue("name", null);
+            var value = inputField.GetAttributeValue("value", null);
+            list.Add(name, value);
+        }
+
+        foreach (var textField in textFields)
+        {
+            var name = textField.GetAttributeValue("name", null);
+            var text = textField.InnerText ?? string.Empty;
+            list.Add(name, text);
+        }
+
+        foreach (var selectField in selectFields)
+        {
+            var name = selectField.GetAttributeValue("name", null);
+            var options = selectField.SelectNodes("//option");
+            var value = "";
+            foreach (var option in options)
+            {
+                if (option.GetAttributeValue("value", null) == null) continue;
+                value += option.GetAttributeValue("value", null) + "#";
+            }
+
+            list.Add(name, value);
+        }
+
+        return list;
+    }
+
+    /// <summary>
     /// Get game id of this category
     /// </summary>
     /// <param name="category">Category instance</param>
@@ -378,6 +439,69 @@ public class Account
         var result = await response.Content.ReadAsStringAsync();
         return result;
     }
+
+    /// <summary>
+    /// Change lot price
+    /// </summary>
+    /// <param name="lotId">Lot ID</param>
+    /// <param name="gameId">Game ID</param>
+    /// <param name="price">New price</param>
+    /// <returns>Response to request</returns>
+    /// <exception cref="Exception"></exception>
+    public async Task<string> ChangeLotPrice(int lotId, int gameId, float price)
+    {
+        var lotInfo = await GetLotInfo(lotId, gameId);
+        var httpClient = new HttpClient();
+        lotInfo["price"] = price.ToString(CultureInfo.InvariantCulture);
+
+        httpClient.DefaultRequestHeaders.Add("Cookie", $"golden_key={Key}; PHPSESSID={SessionId}");
+        httpClient.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
+        httpClient.DefaultRequestHeaders.Add("Accept", "*/*");
+        httpClient.DefaultRequestHeaders.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+
+        var content = new FormUrlEncodedContent(lotInfo);
+        var response = await httpClient.PostAsync($"{Links.SaveLotUrl}", content);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception("Failed to change lot price");
+        }
+
+        var result = await response.Content.ReadAsStringAsync();
+        return result;
+    }
+
+    /// <summary>
+    /// Create new lot
+    /// </summary>
+    /// <param name="lotId"></param>
+    /// <param name="fields"></param>
+    /// <returns>Response to request</returns>
+    /// <exception cref="Exception"></exception>
+    public async Task<string> CreateLot(int lotId, Dictionary<string, string> fields)
+    {
+        var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Add("Cookie", $"golden_key={Key}; PHPSESSID={SessionId}");
+        httpClient.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
+        httpClient.DefaultRequestHeaders.Add("Accept", "*/*");
+        httpClient.DefaultRequestHeaders.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+
+        var nodeId = fields["node_id"];
+        if (nodeId != lotId.ToString())
+        {
+            throw new Exception("Lot ID in fields does not match the specified lot ID");
+        }
+
+        var content = new FormUrlEncodedContent(fields);
+        var response = await httpClient.PostAsync($"{Links.SaveLotUrl}", content);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception("Failed to create lot");
+        }
+
+        var result = await response.Content.ReadAsStringAsync();
+        return result;
+    }
+
 
     /// <summary>
     /// Send message to chat

@@ -81,7 +81,8 @@ public class User
             {
                 var lotId = int.Parse(lotNode.GetAttributeValue("href", null).Split("id=")[1]);
                 var title = lotNode.SelectSingleNode("//div[@class='tc-desc-text']").InnerText;
-                var price = lotNode.SelectSingleNode("//div[@class='tc-price']").InnerText;
+                var price = (int)Math.Round(decimal.Parse(lotNode.SelectSingleNode("//div[@class='tc-price']")
+                    .GetAttributeValue("data-s", "0")));
                 var server = lotNode.SelectSingleNode(".//div[@class='tc-server']")?.InnerText;
                 var lotObject = new Lot
                 {

@@ -18,12 +18,12 @@ public class Lot
     /// <summary>
     /// Lot price
     /// </summary>
-    public required string Price { get; set; }
+    public required int Price { get; set; }
 
     /// <summary>
     /// Lot category ID
     /// </summary>
-    public int CategoryId { get; set; }
+    public required int CategoryId { get; set; }
 
     /// <summary>
     /// Lot category title

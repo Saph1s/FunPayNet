@@ -233,10 +233,10 @@ public class Account
     /// Get lot info
     /// </summary>
     /// <param name="lotId">Lot ID</param>
-    /// <param name="gameId">Game ID</param>
+    /// <param name="categoryId">Category ID</param>
     /// <returns>Dictionary with name and value fields</returns>
     /// <exception cref="Exception"></exception>
-    public async Task<Dictionary<string, string>> GetLotInfo(int lotId, int gameId)
+    public async Task<Dictionary<string, string>> GetLotInfo(int lotId, int categoryId)
     {
         var httpClient = new HttpClient();
         httpClient.DefaultRequestHeaders.Add("Cookie", $"golden_key={Key}; PHPSESSID={SessionId}");
@@ -249,7 +249,7 @@ public class Account
         {
             tag = generatedTag,
             offer = lotId,
-            node = gameId
+            node = categoryId
         };
         var response =
             await httpClient.GetAsync(
@@ -405,13 +405,13 @@ public class Account
     /// Change lot state
     /// </summary>
     /// <param name="lotId">Lot ID</param>
-    /// <param name="gameId">Game ID</param>
+    /// <param name="categoryId">Category ID</param>
     /// <param name="state">State (on/off)</param>
     /// <returns>Response to request</returns>
     /// <exception cref="Exception"></exception>
-    public async Task<string> ChangeLotState(int lotId, int gameId, bool state = true)
+    public async Task<string> ChangeLotState(int lotId, int categoryId, bool state = true)
     {
-        var lotInfo = await GetLotInfo(lotId, gameId);
+        var lotInfo = await GetLotInfo(lotId, categoryId);
         var httpClient = new HttpClient();
         if (state)
         {
@@ -444,13 +444,13 @@ public class Account
     /// Change lot price
     /// </summary>
     /// <param name="lotId">Lot ID</param>
-    /// <param name="gameId">Game ID</param>
+    /// <param name="categoryId">Category ID</param>
     /// <param name="price">New price</param>
     /// <returns>Response to request</returns>
     /// <exception cref="Exception"></exception>
-    public async Task<string> ChangeLotPrice(int lotId, int gameId, float price)
+    public async Task<string> ChangeLotPrice(int lotId, int categoryId, float price)
     {
-        var lotInfo = await GetLotInfo(lotId, gameId);
+        var lotInfo = await GetLotInfo(lotId, categoryId);
         var httpClient = new HttpClient();
         lotInfo["price"] = price.ToString(CultureInfo.InvariantCulture);
 

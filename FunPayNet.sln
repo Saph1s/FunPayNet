@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunPayNet.Core", "FunPayNet.Core\FunPayNet.Core.csproj", "{85DE3FBB-A85E-40B6-A320-1B159411BF7A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunPayNet.Api", "src\FunPayNet.Api\FunPayNet.Api.csproj", "{9737F21E-4DA1-4D33-9755-EC49342805CD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -8,9 +8,9 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{85DE3FBB-A85E-40B6-A320-1B159411BF7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{85DE3FBB-A85E-40B6-A320-1B159411BF7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{85DE3FBB-A85E-40B6-A320-1B159411BF7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{85DE3FBB-A85E-40B6-A320-1B159411BF7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9737F21E-4DA1-4D33-9755-EC49342805CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9737F21E-4DA1-4D33-9755-EC49342805CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9737F21E-4DA1-4D33-9755-EC49342805CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9737F21E-4DA1-4D33-9755-EC49342805CD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

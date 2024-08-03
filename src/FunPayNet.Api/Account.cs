@@ -64,6 +64,7 @@ public class Account
     /// Last updated
     /// </summary>
     public DateTime LastUpdated { get; set; }
+    
 
     /// <summary>
     /// Get Account

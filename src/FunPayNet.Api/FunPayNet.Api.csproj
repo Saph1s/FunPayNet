@@ -11,11 +11,13 @@
         <PackageProjectUrl>https://github.com/Saph1s/FunPayNet</PackageProjectUrl>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="HtmlAgilityPack" Version="1.11.61"/>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
+        <None Include="README.md" Pack="true" PackagePath=""/>
     </ItemGroup>
 
 </Project>

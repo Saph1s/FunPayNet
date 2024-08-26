@@ -243,7 +243,6 @@ public class Account
         httpClient.DefaultRequestHeaders.Add("Cookie", $"golden_key={Key}; PHPSESSID={SessionId}");
         httpClient.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
         httpClient.DefaultRequestHeaders.Add("Accept", "*/*");
-        httpClient.DefaultRequestHeaders.Add("Content-Type", "application/json");
 
         var generatedTag = Helpers.GenerateRandomTag();
         var payload = new
@@ -306,7 +305,6 @@ public class Account
         httpClient.DefaultRequestHeaders.Add("Cookie", $"golden_key={Key}; PHPSESSID={SessionId}");
         httpClient.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
         httpClient.DefaultRequestHeaders.Add("Accept", "*/*");
-        httpClient.DefaultRequestHeaders.Add("Content-Type", "application/json");
 
         var response = await httpClient.GetAsync($"{Links.BaseUrl}/lots/offerEdit?node={nodeId}");
         if (!response.IsSuccessStatusCode)
@@ -498,8 +496,15 @@ public class Account
         {
             throw new Exception("Failed to create lot");
         }
-
+        
         var result = await response.Content.ReadAsStringAsync();
+        var jsonResponse = JsonConvert.DeserializeObject<dynamic>(result);
+        
+        if (jsonResponse?.error != null)
+        {
+            throw new Exception($"Error: {jsonResponse.error}");
+        }
+        
         return result;
     }
 

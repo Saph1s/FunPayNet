@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Web;
 using FunPayNet.Api.Items;
 using FunPayNet.Api.Utils;
@@ -325,7 +326,7 @@ public class Account
         {
             var name = inputField.GetAttributeValue("name", null);
             var value = inputField.GetAttributeValue("value", null);
-            list.Add(name, value);
+            list.TryAdd(name, value);
         }
 
         foreach (var textField in textFields)
@@ -426,9 +427,12 @@ public class Account
         httpClient.DefaultRequestHeaders.Add("Cookie", $"golden_key={Key}; PHPSESSID={SessionId}");
         httpClient.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
         httpClient.DefaultRequestHeaders.Add("Accept", "*/*");
-        httpClient.DefaultRequestHeaders.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
 
         var content = new FormUrlEncodedContent(lotInfo);
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded")
+        {
+            CharSet = "UTF-8"
+        };
         var response = await httpClient.PostAsync($"{Links.BaseUrl}/lots/offerSave", content);
         if (!response.IsSuccessStatusCode)
         {
@@ -456,9 +460,12 @@ public class Account
         httpClient.DefaultRequestHeaders.Add("Cookie", $"golden_key={Key}; PHPSESSID={SessionId}");
         httpClient.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
         httpClient.DefaultRequestHeaders.Add("Accept", "*/*");
-        httpClient.DefaultRequestHeaders.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
 
         var content = new FormUrlEncodedContent(lotInfo);
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded")
+        {
+            CharSet = "UTF-8"
+        };
         var response = await httpClient.PostAsync($"{Links.SaveLotUrl}", content);
         if (!response.IsSuccessStatusCode)
         {
@@ -482,7 +489,6 @@ public class Account
         httpClient.DefaultRequestHeaders.Add("Cookie", $"golden_key={Key}; PHPSESSID={SessionId}");
         httpClient.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
         httpClient.DefaultRequestHeaders.Add("Accept", "*/*");
-        httpClient.DefaultRequestHeaders.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
 
         var nodeId = fields["node_id"];
         if (nodeId != lotId.ToString())
@@ -491,6 +497,10 @@ public class Account
         }
 
         var content = new FormUrlEncodedContent(fields);
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded")
+        {
+            CharSet = "UTF-8"
+        };
         var response = await httpClient.PostAsync($"{Links.SaveLotUrl}", content);
         if (!response.IsSuccessStatusCode)
         {
@@ -500,9 +510,9 @@ public class Account
         var result = await response.Content.ReadAsStringAsync();
         var jsonResponse = JsonConvert.DeserializeObject<dynamic>(result);
         
-        if (jsonResponse?.error != null)
+        if (jsonResponse?.error != null && jsonResponse?.error != "false")
         {
-            throw new Exception($"Error: {jsonResponse.error}");
+            throw new Exception($"Error: {jsonResponse?.error}");
         }
         
         return result;
@@ -526,7 +536,6 @@ public class Account
         };
         httpClient.DefaultRequestHeaders.Add("Accept", "*/*");
         httpClient.DefaultRequestHeaders.Add("Cookie", $"golden_key={Key}; PHPSESSID={SessionId}");
-        httpClient.DefaultRequestHeaders.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
         httpClient.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
         var requestObject = new
         {
@@ -546,6 +555,10 @@ public class Account
         };
 
         var content = new StringContent(JsonConvert.SerializeObject(payload));
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded")
+        {
+            CharSet = "UTF-8"
+        };
         var response = await httpClient.PostAsync($"{Links.RunnerUrl}", content);
         if (!response.IsSuccessStatusCode)
         {
@@ -571,7 +584,6 @@ public class Account
             Timeout = TimeSpan.FromSeconds(timeout)
         };
         httpClient.DefaultRequestHeaders.Add("Accept", "*/*");
-        httpClient.DefaultRequestHeaders.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
         httpClient.DefaultRequestHeaders.Add("Cookie", $"locale=ru; golden_key={Key}");
         httpClient.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
 
@@ -581,6 +593,10 @@ public class Account
             node_id = category.Id
         };
         var content = new StringContent(JsonConvert.SerializeObject(payload));
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded")
+        {
+            CharSet = "UTF-8"
+        };
         var response = await httpClient.PostAsync(Links.RaiseUrl, content);
         if (!response.IsSuccessStatusCode)
         {

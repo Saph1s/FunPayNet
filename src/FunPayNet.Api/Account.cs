@@ -65,7 +65,7 @@ public class Account
     /// Last updated
     /// </summary>
     public DateTime LastUpdated { get; set; }
-    
+
 
     /// <summary>
     /// Get Account
@@ -295,6 +295,52 @@ public class Account
     }
 
     /// <summary>
+    /// Get last lot ID in category
+    /// </summary>
+    /// <param name="categoryId">Category ID</param>
+    /// <returns>Lot ID</returns>
+    /// <exception cref="Exception"></exception>
+    public async Task<int> GetLastLotIdInCategory(int categoryId)
+    {
+        var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Add("Cookie", $"golden_key={Key}; PHPSESSID={SessionId}");
+        httpClient.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
+        httpClient.DefaultRequestHeaders.Add("Accept", "*/*");
+
+        var response = await httpClient.GetAsync($"{Links.BaseUrl}/lots/{categoryId}/trade");
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception("Failed to get last lot in category");
+        }
+
+        var htmlContent = await response.Content.ReadAsStringAsync();
+        var htmlDocument = new HtmlDocument();
+        htmlDocument.LoadHtml(htmlContent);
+
+        var lotsNode =
+            htmlDocument.DocumentNode.SelectSingleNode(
+                "//div[@class='tc table-hover table-clickable tc-short showcase-table']");
+        if (lotsNode == null)
+        {
+            throw new Exception("Failed to get lots node");
+        }
+
+        var firstAnchor = lotsNode.SelectSingleNode(".//a");
+        if (firstAnchor == null)
+        {
+            throw new Exception("Failed to get first anchor");
+        }
+
+        var dataOffer = firstAnchor.GetAttributeValue("data-offer", null);
+        if (dataOffer == null)
+        {
+            throw new Exception("Failed to get data-offer");
+        }
+
+        return int.Parse(dataOffer);
+    }
+
+    /// <summary>
     /// Get the possible fields of the lot
     /// </summary>
     /// <param name="nodeId"></param>
@@ -506,15 +552,15 @@ public class Account
         {
             throw new Exception("Failed to create lot");
         }
-        
+
         var result = await response.Content.ReadAsStringAsync();
         var jsonResponse = JsonConvert.DeserializeObject<dynamic>(result);
-        
+
         if (jsonResponse?.error != null && jsonResponse?.error != "false")
         {
             throw new Exception($"Error: {jsonResponse?.error}");
         }
-        
+
         return result;
     }
 

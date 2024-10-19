@@ -269,11 +269,28 @@ public class Account
         var textFields = lotFormNode.SelectNodes("//textarea");
         var selectFields = lotFormNode.SelectNodes("//select");
         var list = new Dictionary<string, string>();
+
         foreach (var inputField in inputFields)
         {
             var name = inputField.GetAttributeValue("name", null);
-            var value = inputField.GetAttributeValue("value", null);
-            list.Add(name, value);
+            var type = inputField.GetAttributeValue("type", null);
+
+            if (type == "checkbox")
+            {
+                var isChecked = inputField.GetAttributeValue("checked", null) != null;
+                if (name != null)
+                {
+                    list[name] = isChecked ? "on" : string.Empty;
+                }
+            }
+            else
+            {
+                if (name != null && !list.ContainsKey(name))
+                {
+                    var value = inputField.GetAttributeValue("value", null);
+                    list.TryAdd(name, value);
+                }
+            }
         }
 
         foreach (var textField in textFields)
@@ -562,6 +579,85 @@ public class Account
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Delete lot
+    /// </summary>
+    /// <param name="lotId"></param>
+    /// <param name="fields"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    public async Task<bool> DeleteLot(int lotId, Dictionary<string, string> fields)
+    {
+        var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Add("Cookie", $"golden_key={Key}; PHPSESSID={SessionId}");
+        httpClient.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
+        httpClient.DefaultRequestHeaders.Add("Accept", "*/*");
+
+        var nodeId = fields["offer_id"];
+        if (nodeId != lotId.ToString())
+        {
+            throw new Exception("Lot ID in fields does not match the specified lot ID");
+        }
+
+        fields["deleted"] = "1";
+
+        var content = new FormUrlEncodedContent(fields);
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded")
+        {
+            CharSet = "UTF-8"
+        };
+        var response = await httpClient.PostAsync($"{Links.SaveLotUrl}", content);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception("Failed to create lot");
+        }
+
+        var result = await response.Content.ReadAsStringAsync();
+        var jsonResponse = JsonConvert.DeserializeObject<dynamic>(result);
+
+        if (jsonResponse?.error != null && jsonResponse?.error != "false")
+        {
+            throw new Exception($"Error: {jsonResponse?.error}");
+        }
+
+        return true;
+    }
+    
+    public async Task<bool> UpdateLot(int lotId, Dictionary<string, string> fields)
+    {
+        var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Add("Cookie", $"golden_key={Key}; PHPSESSID={SessionId}");
+        httpClient.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
+        httpClient.DefaultRequestHeaders.Add("Accept", "*/*");
+
+        var nodeId = fields["offer_id"];
+        if (nodeId != lotId.ToString())
+        {
+            throw new Exception("Lot ID in fields does not match the specified lot ID");
+        }
+
+        var content = new FormUrlEncodedContent(fields);
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded")
+        {
+            CharSet = "UTF-8"
+        };
+        var response = await httpClient.PostAsync($"{Links.SaveLotUrl}", content);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception("Failed to create lot");
+        }
+
+        var result = await response.Content.ReadAsStringAsync();
+        var jsonResponse = JsonConvert.DeserializeObject<dynamic>(result);
+
+        if (jsonResponse?.error != null && jsonResponse?.error != "false")
+        {
+            throw new Exception($"Error: {jsonResponse?.error}");
+        }
+
+        return true;
     }
 
 

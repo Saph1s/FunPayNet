@@ -87,7 +87,9 @@ public class Account
         var response = await httpClient.GetAsync($"{Links.BaseUrl}");
         if (!response.IsSuccessStatusCode)
         {
-            throw new Exception("Failed to get account info");
+            var exceptionResult = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException("Failed to get account info",
+                new Exception($"{response.StatusCode}: {exceptionResult}"));
         }
 
         var htmlContent = await response.Content.ReadAsStringAsync();
@@ -164,7 +166,9 @@ public class Account
         var response = await httpClient.GetAsync($"{Links.OrdersUrl}");
         if (!response.IsSuccessStatusCode)
         {
-            throw new Exception("Failed to get orders");
+            var exceptionResult = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException("Failed to get orders",
+                new Exception($"{response.StatusCode}: {exceptionResult}"));
         }
 
         var htmlContent = await response.Content.ReadAsStringAsync();
@@ -257,7 +261,9 @@ public class Account
                 $"{Links.BaseUrl}/lots/offerEdit?tag={payload.tag}&offer={payload.offer}&node={payload.node}");
         if (!response.IsSuccessStatusCode)
         {
-            throw new Exception("Failed to get lot info");
+            var exceptionResult = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException("Failed to get lot info",
+                new Exception($"{response.StatusCode}: {exceptionResult}"));
         }
 
         var htmlContent = await response.Content.ReadAsStringAsync();
@@ -327,7 +333,9 @@ public class Account
         var response = await httpClient.GetAsync($"{Links.BaseUrl}/lots/{categoryId}/trade");
         if (!response.IsSuccessStatusCode)
         {
-            throw new Exception("Failed to get last lot in category");
+            var exceptionResult = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException("Failed to get last lot in category",
+                new Exception($"{response.StatusCode}: {exceptionResult}"));
         }
 
         var htmlContent = await response.Content.ReadAsStringAsync();
@@ -373,7 +381,9 @@ public class Account
         var response = await httpClient.GetAsync($"{Links.BaseUrl}/lots/offerEdit?node={nodeId}");
         if (!response.IsSuccessStatusCode)
         {
-            throw new Exception("Failed to get lot fields");
+            var exceptionResult = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException("Failed to get lot fields",
+                new Exception($"{response.StatusCode}: {exceptionResult}"));
         }
 
         var htmlContent = await response.Content.ReadAsStringAsync();
@@ -441,7 +451,9 @@ public class Account
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new Exception("Failed to get category game id");
+            var exceptionResult = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException("Failed to get category game id",
+                new Exception($"{response.StatusCode}: {exceptionResult}"));
         }
 
         var htmlContent = await response.Content.ReadAsStringAsync();
@@ -499,7 +511,9 @@ public class Account
         var response = await httpClient.PostAsync($"{Links.BaseUrl}/lots/offerSave", content);
         if (!response.IsSuccessStatusCode)
         {
-            throw new Exception("Failed to change lot state");
+            var exceptionResult = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException("Failed to change lot state",
+                new Exception($"{response.StatusCode}: {exceptionResult}"));
         }
 
         var result = await response.Content.ReadAsStringAsync();
@@ -532,7 +546,9 @@ public class Account
         var response = await httpClient.PostAsync($"{Links.SaveLotUrl}", content);
         if (!response.IsSuccessStatusCode)
         {
-            throw new Exception("Failed to change lot price");
+            var exceptionResult = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException("Failed to change lot price",
+                new Exception($"{response.StatusCode}: {exceptionResult}"));
         }
 
         var result = await response.Content.ReadAsStringAsync();
@@ -567,7 +583,9 @@ public class Account
         var response = await httpClient.PostAsync($"{Links.SaveLotUrl}", content);
         if (!response.IsSuccessStatusCode)
         {
-            throw new Exception("Failed to create lot");
+            var exceptionResult = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException("Failed to create lot",
+                new Exception($"{response.StatusCode}: {exceptionResult}"));
         }
 
         var result = await response.Content.ReadAsStringAsync();
@@ -611,7 +629,9 @@ public class Account
         var response = await httpClient.PostAsync($"{Links.SaveLotUrl}", content);
         if (!response.IsSuccessStatusCode)
         {
-            throw new Exception("Failed to create lot");
+            var exceptionResult = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException("Failed to create lot",
+                new Exception($"{response.StatusCode}: {exceptionResult}"));
         }
 
         var result = await response.Content.ReadAsStringAsync();
@@ -624,7 +644,7 @@ public class Account
 
         return true;
     }
-    
+
     public async Task<bool> UpdateLot(int lotId, Dictionary<string, string> fields)
     {
         var httpClient = new HttpClient();
@@ -646,7 +666,9 @@ public class Account
         var response = await httpClient.PostAsync($"{Links.SaveLotUrl}", content);
         if (!response.IsSuccessStatusCode)
         {
-            throw new Exception("Failed to create lot");
+            var exceptionResult = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException("Failed to create lot",
+                new Exception($"{response.StatusCode}: {exceptionResult}"));
         }
 
         var result = await response.Content.ReadAsStringAsync();
@@ -704,7 +726,9 @@ public class Account
         var response = await httpClient.PostAsync($"{Links.RunnerUrl}", content);
         if (!response.IsSuccessStatusCode)
         {
-            throw new Exception("Failed to send message");
+            var exceptionResult = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException("Failed to send message",
+                new Exception($"{response.StatusCode}: {exceptionResult}"));
         }
 
         var jsonResponse = await response.Content.ReadAsStringAsync();
@@ -742,7 +766,9 @@ public class Account
         var response = await httpClient.PostAsync(Links.RaiseUrl, content);
         if (!response.IsSuccessStatusCode)
         {
-            throw new Exception("Failed to raise lots");
+            var exceptionResult = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException("Failed to raise lots",
+                new Exception($"{response.StatusCode}: {exceptionResult}"));
         }
 
         var result = await response.Content.ReadAsStringAsync();
